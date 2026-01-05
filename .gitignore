@@ -1,0 +1,6 @@
+venv/
+*.xlsx
+*.egg-info
+__pycache__
+.DS_Store
+play.py
