@@ -46,7 +46,7 @@ class Lbmom():
 
     def run_simulation(self , historical_data):
         #init params
-        instruments = self.instrument_config["instruments"]
+        instruments = self.instrument_config["indices"] + self.instrument_config["bonds"]
         
         #calculate/preprocess indicators
         historical_data = self.extend_historicals(instruments= instruments , historical_data= historical_data)

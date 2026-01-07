@@ -1,6 +1,7 @@
 from quantlib import data as du
 from quantlib import general_utils as gu
 from quantlib.database import Database
+import datetime
 import json
 import pandas as pd
 
@@ -22,6 +23,9 @@ with open("config/auth_config.json") as f:
 with open("config/oan_config.json") as f:
     brokerage_config = json.load(f)
 
+with open("config/portfolio_config.json") as f:
+    portfolio_config = json.load(f) #settings for the portfolio
+
 brokerage = Oanda(auth_config=auth_config)
 
 
@@ -40,7 +44,7 @@ db_instruments = brokerage_config["currencies"] + brokerage_config["indices"] \
 # for inst in db_instruments:
 #     try:
 #         print(f"Fetching data for {inst}...")
-#         ohlcv_df = trade_client.get_ohlcv(instrument=inst, count=30, granularity="D")
+#         ohlcv_df = trade_client.get_ohlcv(instrument=inst, count=5000, granularity="D")
 #         if ohlcv_df is not None and not ohlcv_df.empty:
 #             ohlcv_data[inst] = ohlcv_df
 #             print(f"  ✓ Got {len(ohlcv_df)} candles for {inst}")
@@ -96,10 +100,6 @@ db_instruments = brokerage_config["currencies"] + brokerage_config["indices"] \
 
 
 
-print("\n" + "="*70)
-print("Loading data from database...")
-print("="*70)
-
 try:
     db = Database(db_path='./Data/hakuquant.db')
     
@@ -147,11 +147,10 @@ except Exception as e:
 
 
 
-historical_data = du.extend_dataframe(traded=db_instruments, df=database_df)
+historical_data = du.extend_dataframe(traded=db_instruments, df=database_df, fx_codes=brokerage_config["fx_codes"])
 
-print(historical_data)
+# print(historical_data)
 # import random
-
 # pairs = []
 
 # while len(pairs) <= 20:
@@ -163,13 +162,17 @@ print(historical_data)
 # print(pairs)
 
 
+# loading from config 
+vol_target = portfolio_config["vol_target"]
+sim_start = datetime.date.today() - relativedelta(years=portfolio_config["sim_years"])
 
 
-# sim_data = df.index[-1] - relativedelta(years=5)
-# print(sim_data)
 
-# VOLATILITY_TARGET= 0.20
+strat = Lbmom(
+    './subsystems/lbmom/config.json', 
+    historical_df=historical_data,
+    simulation_start=sim_start,
+    vol_target=vol_target
+)
 
-# strat = Lbmom('./subsystems/lbmom/config.json' , df ,sim_data , VOLATILITY_TARGET)
-
-# strat.get_subsys_pos()
+strat.get_subsys_pos()

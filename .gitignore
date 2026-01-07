@@ -9,3 +9,6 @@ play.py
 *.db
 *.db-journal
 Data/*.db
+
+config/auth_config.json
+config/oan_config.json
